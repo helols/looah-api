@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="article">
+    <insert id="add" parameterClass="com.looah.api.models.Article">
+        INSERT INTO articles(
+            title,
+            content,
+            post_date,
+            modified_date,
+            enabled,
+            original_url,
+            user_id,
+            category_id,
+            note,
+            article_type,
+            most_read,
+            fk_id_language_set,
+            fk_id_via,
+            follow_count
+         )VALUES(
+            #title#,
+            #content#,
+            #postDate#,
+            #modifiedDate#,
+            1,
+            #originalUrl#,
+            #userId#,
+            #categoryId#,
+            '',
+            #articleType#,
+            #mostRead#,
+            #languageSetId#,
+            #viaId#,
+            0
+         )
+        <selectKey resultClass="int" type="post">
+          SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+    
+    <insert id = "addArticleImage" parameterClass="com.looah.api.models.ArticleImage">
+        INSERT INTO article_images(
+            article_id,
+            file_name,
+            type,
+            `order`,
+            thumbnail
+        )VALUES(
+            #articleId#,
+            #fileName#,
+            #type#,
+            #order#,
+            #thumbnail#
+        )
+        <selectKey resultClass="int" type="post">
+          SELECT last_insert_id()
+        </selectKey>
+    </insert>
+    
+    <insert id="addImageFile" parameterClass="hashMap">
+        INSERT INTO images(
+            id,
+            body
+        )VALUES(
+            #id#,
+            #body#
+        )
+    </insert>
+    
+    <insert id="addImageAttribute" parameterClass="hashMap">
+        INSERT INTO image_attributes(
+            id,
+            type,
+            length,
+            width,
+            height,
+            bits,
+            channels
+        )VALUES(
+            #id#,
+            #type#,
+            #length#,
+            #width#,
+            #height#,
+            #bits#,
+            #channels#
+        )
+    </insert>
+    
+    <insert id="addTag" parameterClass="hashMap">
+        INSERT INTO tags(
+            article_id,
+            name
+        )VALUES(
+            #articleId#,
+            #name#
+        )
+    </insert>
+    
+    <insert id="addTranslatingProgresses" parameterClass="hashMap">
+        INSERT INTO translating_progresses(
+            original_count,
+            translated_count,
+            fk_id_article,
+            complete_request,
+            enabled,
+            updated_date
+        )VALUES(
+            #originalCount#,
+            #translatedCount#,
+            #articleId#,
+            0,
+            1,
+            #updatedDate#
+        )
+    </insert>
+    
+    <insert id="addImageGeoInfo" parameterClass="com.looah.api.models.ImageGeoInfo">
+        INSERT INTO image_geo_infos(
+            degree_latitude,
+            degree_longitude,
+            minute_latitude,
+            minute_longitude,
+            second_latitude,
+            second_longitude,
+            latitude_ref,
+            longitude_ref,
+            latitude,
+            longitude,
+            country,
+            fk_id_article,
+            fk_id_image,
+            created_date
+        )VALUES(
+            #degreeLatitude#,
+            #degreeLongitude#,
+            #minuteLatitude#,
+            #minuteLongitude#,
+            #secondLatitude#,
+            #secondLongitude#,
+            #latitudeRef#,
+            #longitudeRef#,
+            #latitude#,
+            #longitude#,
+            #county#,
+            #articleId#,
+            #imageId#,
+            #createDate#
+        )
+    </insert>
+    
+    <select id="getArticlePhoto" parameterClass="hashMap" resultClass="hashMap">
+    select 
+        articles.id as id,
+        concat('Posted by ',users.uname) as title,
+        UNIX_TIMESTAMP(articles.post_date) as createdDate,
+        articles.content as content,
+        translated_content(articles.id) as translatedContent,
+        articles.most_read as viewCount,
+        language_sets.id as langSetId,
+        language_sets.name as language,
+        (translating_progresses.translated_count > 0 or translating_progresses.complete_request = 1) as xCompleted ,
+        image_geo_infos.country as country,
+        image_geo_infos.latitude as lat,
+        image_geo_infos.longitude as lng,
+        group_concat(distinct tags.name separator ', ') as tags,
+        users.id as uId,
+        users.uname as uname,
+        user_infos.image_1 as profileUrl,
+        user_infos.profile_image_type as profileType,
+        third_party_user_infos.third_party_profile_image as thirdProfileImg,
+        article_images.id as pId,
+        image_attributes.width,
+        image_attributes.type as contentType,
+        image_attributes.height
+      from articles 
+      inner join article_images
+        on article_images.article_id = articles.id
+      inner join image_attributes
+        on image_attributes.id = article_images.id
+      inner join language_sets
+        on language_sets.id = articles.fk_id_language_set
+      inner join users
+        on users.id = articles.user_id
+      inner join user_infos
+        on users.id = user_infos.user_id
+      inner join translating_progresses
+        on translating_progresses.fk_id_article = articles.id
+       and translating_progresses.enabled = 1
+      inner join vias
+        on vias.id = articles.fk_id_via
+       and vias.enabled = 1 
+      left outer join tags
+        on tags.article_id = articles.id
+      left outer join third_party_user_infos
+        on users.id = third_party_user_infos.fk_id_user
+       and third_party_user_infos.connected = 1
+       and third_party_user_infos.third_party_type = user_infos.profile_image_type
+      left outer join image_geo_infos 
+        on image_geo_infos.fk_id_article = articles.id
+      where articles.id = #articleId#
+      and articles.enabled = '1' 
+      and articles.article_type = #articleType#
+      group by articles.id
+    </select>
+    
+    <select id ="getPhotoList" parameterClass="hashMap" resultClass="hashMap">
+    select 
+      articles.id,
+      article_images.id as pId,
+      language_sets.id  as langSetId,
+      language_sets.name as language,
+      articles.content as content,
+      ifnull(min(case translatings.paragraph_no
+        when 0 then translating_articles.translated
+        else NULL
+      END),max(case translatings.paragraph_no
+        when 1 then translating_articles.translated
+        else NULL
+      END)) as translateContent,
+      concat('posted by ', users.uname) as title,
+      (translating_progresses.translated_count > 0 or translating_progresses.complete_request = 1) as xCompleted ,
+      ifnull(UNIX_TIMESTAMP(translatings.updated_date),UNIX_TIMESTAMP(articles.post_date)) as `timestamp`,
+      users.uname as uname
+    from articles 
+    inner join users
+       on users.id = articles.user_id
+      and users.enabled = 1
+      <isNotEmpty property="uname" >
+      and users.uname = #uname# 
+      </isNotEmpty>
+    inner join language_sets
+       on language_sets.id = articles.fk_id_language_set
+    inner join translating_progresses
+       on translating_progresses.fk_id_article = articles.id
+      and translating_progresses.enabled = 1
+    <isEqual property="isXCompleted" compareValue="1"> 
+      and (translating_progresses.translated_count > 0 or translating_progresses.complete_request = 1)
+    </isEqual>
+    <isEqual property="isXCompleted" compareValue="2"> 
+      and (translating_progresses.translated_count &lt;&gt; translating_progresses.original_count or translating_progresses.complete_request &lt;&gt; 1)
+    </isEqual>
+    <isEqual property="isXCompleted" compareValue="1">
+    inner join translatings
+    </isEqual>
+    <isNotEqual property="isXCompleted" compareValue="1">
+    left outer join translatings
+    </isNotEqual>
+       on translatings.fk_id_article = articles.id
+      and translatings.last_updated = 1
+      and translatings.enabled = 1
+    <isEqual property="isXCompleted" compareValue="1">
+    inner join translating_articles
+    </isEqual>
+    <isNotEqual property="isXCompleted" compareValue="1">
+    left outer join translating_articles
+    </isNotEqual>
+       on translating_articles.fk_id_translating = translatings.id
+    left outer join article_images
+       on articles.id = article_images.article_id
+      and article_images.thumbnail = 1
+    where articles.enabled = 1 
+      and articles.article_type = 'photo'
+    <isNotEqual property="langSetId" compareValue="0">
+      and articles.fk_id_language_set = #langSetId# 
+    </isNotEqual>
+    group by articles.id, articles.post_date
+    <isNotEqual property="lastTimeStamp" compareValue="0">
+        <isNotEqual property="sinceId" compareValue="0">
+    having `timestamp` &lt;= #lastTimeStamp# and articles.id &lt;&gt; #sinceId# 
+	    </isNotEqual>
+    </isNotEqual>
+    order by `timestamp` desc , articles.post_date desc
+    limit #skiprows#, #pagesize#
+    </select>
+</sqlMap>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jee="http://www.springframework.org/schema/jee" xmlns:lang="http://www.springframework.org/schema/lang"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:util="http://www.springframework.org/schema/util" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+        http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+
+
+    <!-- ============================================================= -->
+    <!--  @Controller component scan!.                                 -->
+    <!-- ============================================================= -->
+    <context:component-scan base-package="com.looah.api.modules" use-default-filters="false">
+        <context:include-filter type="annotation"
+                                expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!-- ============================================================= -->
+    <!--  annotationHandlermapping                                     -->
+    <!-- ============================================================= -->
+    <bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping" p:order="0"/>
+
+    <!-- ============================================================= -->
+    <!--  file upload.                                                 -->
+    <!-- ============================================================= -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"
+          p:defaultEncoding="utf-8"
+          p:maxUploadSize="3145728"
+          p:uploadTempDir="#{looahApiProperty['upload.temp.dir']}"/>
+
+    <!-- ============================================================= -->
+    <!--  AnnotationMethodHandlerAdapter                               -->
+    <!-- ============================================================= -->
+    <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter" p:cacheSeconds="0"/>
+
+    <!-- ============================================================= -->
+    <!--  contentNegotiating                                           -->
+    <!-- ============================================================= -->
+    <bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+        <property name="mediaTypes">
+            <map>
+                <entry key="xml" value="application/xml"/>
+                <entry key="json" value="application/json"/>
+            </map>
+        </property>
+        <property name="viewResolvers">
+            <list>
+                <bean class="org.springframework.web.servlet.view.BeanNameViewResolver"/>
+            </list>
+        </property>
+        <property name="defaultViews">
+            <list>
+                <ref bean="marshallingView"/>
+                <ref bean="mappingJacksonJsonView"/>
+            </list>
+        </property>
+        <property name="defaultContentType" value="application/xml"/>
+        <property name="ignoreAcceptHeader" value="true"/>
+    </bean>
+
+    <!-- ============================================================= -->
+    <!--  JSON xml view                                                -->
+    <!-- ============================================================= -->
+    <bean id="mappingJacksonJsonView" class="org.springframework.web.servlet.view.json.MappingJacksonJsonView"/>
+    <bean id="marshallingView" class="org.springframework.web.servlet.view.xml.MarshallingView"
+          p:contentType="application/xml;charset=UTF-8">
+        <property name="marshaller">
+            <bean class="com.looah.api.support.ExtendXStreamMarshaller" p:autodetectAnnotations="true">
+                <property name="streamDriver">
+                    <bean class="com.thoughtworks.xstream.io.xml.JDomDriver"/>
+                </property>
+            </bean>
+        </property>
+        <property name="modelKey" value="data"/>
+    </bean>
+</beans>
