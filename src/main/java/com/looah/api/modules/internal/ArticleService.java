@@ -14,7 +14,10 @@ import com.looah.api.models.wrapper.Photos;
 public interface ArticleService {
 
     public Integer addPhoto(HashMap<String,Object> paramMap);
+    
     public String getCountryInfo(String lat, String lng);
+    
     public PhotoDetail get(String articleId);
+    
     public Photos<Photo> getPhotoList(HashMap<String, Object> paramMap);
 }

@@ -18,11 +18,9 @@ public class PhotoDetail {
     
     private long id;
     
-    private long pId;
-    
     private int langSetId;
     
-    private long timeStamp;
+    private long createdTimeStamp;
 
     private boolean isXcompleted;
     
@@ -93,20 +91,12 @@ public class PhotoDetail {
         this.langSetId = langSetId;
     }
 
-    public void setTimeStamp(long timeStamp) {
-        this.timeStamp = timeStamp;
+    public void setCreatedTimeStamp(long createdTimeStamp) {
+        this.createdTimeStamp = createdTimeStamp;
     }
 
     public long getTimeStamp() {
-        return timeStamp;
-    }
-
-    public void setPId(long pId) {
-        this.pId = pId;
-    }
-
-    public long getPId() {
-        return pId;
+        return createdTimeStamp;
     }
 
     public HashMap<String,Object> getImage(){

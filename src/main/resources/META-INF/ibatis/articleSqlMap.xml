@@ -153,7 +153,7 @@
     select 
         articles.id as id,
         concat('Posted by ',users.uname) as title,
-        UNIX_TIMESTAMP(articles.post_date) as createdDate,
+        UNIX_TIMESTAMP(articles.post_date) as createdTimeStamp,
         articles.content as content,
         translated_content(articles.id) as translatedContent,
         articles.most_read as viewCount,
@@ -198,9 +198,9 @@
        and third_party_user_infos.third_party_type = user_infos.profile_image_type
       left outer join image_geo_infos 
         on image_geo_infos.fk_id_article = articles.id
-      where articles.id = #articleId#
+      where articles.id = #id#
       and articles.enabled = '1' 
-      and articles.article_type = #articleType#
+      and articles.article_type = #type#
       group by articles.id
     </select>
     

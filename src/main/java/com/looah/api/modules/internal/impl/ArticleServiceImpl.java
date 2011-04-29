@@ -202,11 +202,10 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public PhotoDetail get(String articleId) {
+    public PhotoDetail get(String id) {
         HashMap<String, String> paramMap = new HashMap<String,String>();
-        paramMap.put("articleId", articleId);
-        paramMap.put("articleType", TYPE_PHOTO);
-
+        paramMap.put("id", id);
+        paramMap.put("type", TYPE_PHOTO);
         HashMap<String,Object> articlePhotoInfo = articleDao.getArticlePhoto(paramMap);
         if(articlePhotoInfo != null && !articlePhotoInfo.isEmpty()){
             PhotoDetail photoDetail = new PhotoDetail((Long) articlePhotoInfo.get("id"));
@@ -217,7 +216,7 @@ public class ArticleServiceImpl implements ArticleService {
             userInfo.put("uname", articlePhotoInfo.get("uname"));
             userInfo.put("profileUrl", looahAPIConfig.LOOAH_DOMAIN+"/img/default-profile.png");
             
-            if(TYPE_LOOAH_P.equals(articlePhotoInfo.get("profile_image_type").toString())){
+            if(TYPE_LOOAH_P.equals(articlePhotoInfo.get("profileType").toString())){
                 if(articlePhotoInfo.get("profileUrl") != null && !"".equals(articlePhotoInfo.get("profileUrl").toString())){
                     userInfo.put("profileUrl", looahAPIConfig.LOOAH_DOMAIN+"/img/user_img/"+
                                                looahCommon.getDirSeparate((Long) articlePhotoInfo.get("uId"))+
@@ -245,12 +244,11 @@ public class ArticleServiceImpl implements ArticleService {
             imageInfo.put("twiceThumbnailUrl", looahCommon.makeImageUrl(imageId, TWICE_THUMBNAIL_SIZE));
 
             photoDetail.setId((Long)articlePhotoInfo.get("id"));
-            photoDetail.setPId((Long)articlePhotoInfo.get("pId"));
             photoDetail.setLanguage(articlePhotoInfo.get("language").toString());
             photoDetail.setLangSetId((Integer)articlePhotoInfo.get("langSetId"));
             photoDetail.setTitle(articlePhotoInfo.get("title").toString());
-            photoDetail.setTimeStamp((Long)articlePhotoInfo.get("timestamp"));
-            photoDetail.setXcompleted(((Integer)articlePhotoInfo.get("xCompleted") == 1));
+            photoDetail.setCreatedTimeStamp((Long)articlePhotoInfo.get("createdTimeStamp"));
+            photoDetail.setXcompleted(articlePhotoInfo.get("xCompleted").equals(1));
             String content = articlePhotoInfo.get("content").toString(); 
             if(articlePhotoInfo.get("translateContent") != null){
               content = articlePhotoInfo.get("translateContent").toString();
@@ -280,7 +278,7 @@ public class ArticleServiceImpl implements ArticleService {
                 photo.setTimeStamp((Long)result.get("timestamp"));
                 photo.setThumbUrl(looahCommon.makeImageUrl((Long)result.get("pId"), LooahAPIConfig.THUMBNAIL_SIZE));
                 photo.setTwiceThumbUrl(looahCommon.makeImageUrl((Long)result.get("pId"), LooahAPIConfig.TWICE_THUMBNAIL_SIZE));
-                photo.setXcompleted(((Integer)result.get("xCompleted") == 1));
+                photo.setXcompleted(result.get("xCompleted").equals(1));
                 content = result.get("content").toString(); 
                 if(result.get("translateContent") != null){
                   content = result.get("translateContent").toString();

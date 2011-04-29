@@ -87,13 +87,13 @@ public class PhotoController {
         }
     }
     
-    @RequestMapping(value="{articleId}", method= RequestMethod.GET)
-    public ModelAndView get(@PathVariable String articleId){
+    @RequestMapping(value="/get/{id}", method= RequestMethod.GET)
+    public ModelAndView get(@PathVariable String id){
         
         Pattern patt = Pattern.compile("[0-9]+");
-        Matcher m = patt.matcher(articleId);
+        Matcher m = patt.matcher(id);
         if(m.matches()){
-            return new ModelAndView().addObject("data",articleService.get(articleId));
+            return new ModelAndView().addObject("data",articleService.get(id));
         }
         return new ModelAndView().addObject("data",new ApiError(-1,"error.."));
     }
