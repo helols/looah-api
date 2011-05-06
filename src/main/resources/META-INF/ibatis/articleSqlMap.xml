@@ -217,7 +217,7 @@
       END),max(case translatings.paragraph_no
         when 1 then translating_articles.translated
         else NULL
-      END)) as translateContent,
+      END)) as translatedContent,
       concat('posted by ', users.uname) as title,
       (translating_progresses.translated_count > 0 or translating_progresses.complete_request = 1) as xCompleted ,
       ifnull(UNIX_TIMESTAMP(translatings.updated_date),UNIX_TIMESTAMP(articles.post_date)) as `timestamp`,

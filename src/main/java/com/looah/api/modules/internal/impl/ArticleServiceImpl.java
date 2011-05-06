@@ -248,10 +248,10 @@ public class ArticleServiceImpl implements ArticleService {
             photoDetail.setLangSetId((Integer)articlePhotoInfo.get("langSetId"));
             photoDetail.setTitle(articlePhotoInfo.get("title").toString());
             photoDetail.setCreatedTimeStamp((Long)articlePhotoInfo.get("createdTimeStamp"));
-            photoDetail.setXcompleted(articlePhotoInfo.get("xCompleted").equals(1));
+            photoDetail.setXcompleted(articlePhotoInfo.get("xCompleted").toString().equals("1"));
             String content = articlePhotoInfo.get("content").toString(); 
-            if(articlePhotoInfo.get("translateContent") != null){
-              content = articlePhotoInfo.get("translateContent").toString();
+            if(articlePhotoInfo.get("translatedContent") != null){
+              content = articlePhotoInfo.get("translatedContent").toString();
             }
             photoDetail.setContent(content);
             photoDetail.setImage(imageInfo);
@@ -278,10 +278,10 @@ public class ArticleServiceImpl implements ArticleService {
                 photo.setTimeStamp((Long)result.get("timestamp"));
                 photo.setThumbUrl(looahCommon.makeImageUrl((Long)result.get("pId"), LooahAPIConfig.THUMBNAIL_SIZE));
                 photo.setTwiceThumbUrl(looahCommon.makeImageUrl((Long)result.get("pId"), LooahAPIConfig.TWICE_THUMBNAIL_SIZE));
-                photo.setXcompleted(result.get("xCompleted").equals(1));
+                photo.setXcompleted(result.get("xCompleted").toString().equals("1"));
                 content = result.get("content").toString(); 
-                if(result.get("translateContent") != null){
-                  content = result.get("translateContent").toString();
+                if(result.get("translatedContent") != null){
+                  content = result.get("translatedContent").toString();
                 }
                 photo.setContent(looahCommon.cutText(content,50));
                 photos.add(photo);
